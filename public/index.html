@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Diary</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --primary-color: #4CAF50;
+            --primary-dark: #45a049;
+            --secondary-color: #007bff;
+            --secondary-dark: #0056b3;
+            --border-color: #ddd;
+            --card-bg: #fff;
+            --error-color: #dc3545;
+            --input-bg: #fff;
+            --input-border: #ccc;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #282c34;
+                --text-color: #e0e0e0;
+                --primary-color: #61afef;
+                --primary-dark: #529bdc;
+                --secondary-color: #98c379;
+                --secondary-dark: #82b366;
+                --border-color: #444;
+                --card-bg: #3a3f4b;
+                --error-color: #e06c75;
+                --input-bg: #3a3f4b;
+                --input-border: #555;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-section, .app-section {
+            display: none; /* Hidden by default, controlled by JS */
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button.secondary {
+            background-color: var(--secondary-color);
+        }
+
+        button.secondary:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        button.danger {
+            background-color: #dc3545;
+        }
+
+        button.danger:hover {
+            background-color: #c82333;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            background-color: rgba(220, 53, 69, 0.1);
+            border: 1px solid var(--error-color);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+
+        .success-message {
+            color: var(--primary-color);
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid var(--primary-color);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-bar span {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .entry-list {
+            margin-top: 30px;
+        }
+
+        .entry-card {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .entry-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .entry-card h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .entry-card p {
+            margin-bottom: 10px;
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        }
+
+        .entry-card .meta {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .entry-actions button {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            margin-right: 0; /* Override default button margin */
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            .entry-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="error-message" class="error-message" aria-live="assertive"></div>
+        <div id="success-message" class="success-message" aria-live="polite"></div>
+
+        <div id="auth-section" class="auth-section">
+            <h1>Welcome to Your Private Diary</h1>
+            <p style="text-align: center;">Sign up or log in to keep your thoughts secure.</p>
+
+            <div id="signup-form">
+                <h2>Sign Up</h2>
+                <div class="form-group">
+                    <label for="signup-email">Email:</label>
+                    <input type="email" id="signup-email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password (min 8 chars, incl. upper, lower, number):</label>
+                    <input type="password" id="signup-password" required autocomplete="new-password">
+                </div>
+                <div class="button-group">
+                    <button onclick="handleSignUp()">Sign Up</button>
+                    <button class="secondary" onclick="showLoginForm()">Already have an account? Log In</button>
+                </div>
+            </div>
+
+            <div id="login-form" class="hidden">
+                <h2>Log In</h2>
+                <div class="form-group">
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" required autocomplete="current-password">
+                </div>
+                <div class="button-group">
+                    <button onclick="handleLogin()">Log In</button>
+                    <button class="secondary" onclick="showSignupForm()">Need an account? Sign Up</button>
+                </div>
+            </div>
+
+            <div id="confirm-form" class="hidden">
+                <h2>Confirm Your Email</h2>
+                <p>A confirmation code has been sent to your email address. Please enter it below.</p>
+                <div class="form-group">
+                    <label for="confirm-email">Email:</label>
+                    <input type="email" id="confirm-email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="confirmation-code">Confirmation Code:</label>
+                    <input type="text" id="confirmation-code" required>
+                </div>
+                <div class="button-group">
+                    <button onclick="handleConfirm()">Confirm Account</button>
+                    <button class="secondary" onclick="showLoginForm()">Back to Login</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="app-section" class="app-section">
+            <div class="header-bar">
+                <span id="user-email"></span>
+                <button class="secondary" onclick="handleLogout()">Log Out</button>
+            </div>
+
+            <h2>New Diary Entry</h2>
+            <div class="form-group">
+                <label for="entry-title">Title:</label>
+                <input type="text" id="entry-title" placeholder="A memorable day..." required>
+            </div>
+            <div class="form-group">
+                <label for="entry-content">Content:</label>
+                <textarea id="entry-content" placeholder="What happened today? How do you feel?" required></textarea>
+            </div>
+            <div class="button-group">
+                <button id="save-entry-button" onclick="handleSaveEntry()">Add Entry</button>
+                <button id="cancel-edit-button" class="secondary hidden" onclick="cancelEdit()">Cancel Edit</button>
+            </div>
+
+            <h2 style="margin-top: 40px;">Your Entries</h2>
+            <div id="entry-list" class="entry-list">
+                <p style="text-align: center; color: #888;">No entries yet. Start writing!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const authSection = document.getElementById('auth-section');
+        const appSection = document.getElementById('app-section');
+        const signupForm = document.getElementById('signup-form');
+        const loginForm = document.getElementById('login-form');
+        const confirmForm = document.getElementById('confirm-form');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const userEmailSpan = document.getElementById('user-email');
+        const entryListDiv = document.getElementById('entry-list');
+        const entryTitleInput = document.getElementById('entry-title');
+        const entryContentInput = document.getElementById('entry-content');
+        const saveEntryButton = document.getElementById('save-entry-button');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+
+        let currentEditingEntryId = null;
+
+        function showMessage(element, message, type = 'error') {
+            element.textContent = message;
+            element.style.display = 'block';
+            if (type === 'error') {
+                element.classList.remove('success-message');
+                element.classList.add('error-message');
+            } else {
+                element.classList.remove('error-message');
+                element.classList.add('success-message');
+            }
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        function displayError(message) {
+            showMessage(errorMessage, message, 'error');
+        }
+
+        function displaySuccess(message) {
+            showMessage(successMessage, message, 'success');
+        }
+
+        function showSection(sectionId) {
+            authSection.style.display = 'none';
+            appSection.style.display = 'none';
+            document.getElementById(sectionId).style.display = 'block';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function showSignupForm() {
+            signupForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            confirmForm.classList.add('hidden');
+            document.getElementById('signup-email').value = '';
+            document.getElementById('signup-password').value = '';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function showLoginForm() {
+            signupForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            confirmForm.classList.add('hidden');
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function showConfirmForm(email = '') {
+            signupForm.classList.add('hidden');
+            loginForm.classList.add('hidden');
+            confirmForm.classList.remove('hidden');
+            document.getElementById('confirm-email').value = email;
+            document.getElementById('confirmation-code').value = '';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/auth/me');
+                if (response.ok) {
+                    const data = await response.json();
+                    userEmailSpan.textContent = 'Logged in as: ' + data.email;
+                    showSection('app-section');
+                    loadEntries();
+                } else {
+                    showSection('auth-section');
+                    showLoginForm(); // Default to login form if not authenticated
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                showSection('auth-section');
+                showLoginForm();
+            }
+        }
+
+        async function handleSignUp() {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            if (!email || !password) {
+                displayError('Email and password are required.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    displaySuccess(data.message);
+                    showConfirmForm(email);
+                } else {
+                    displayError(data.message);
+                }
+            } catch (error) {
+                displayError('An unexpected error occurred during sign up.');
+                console.error('Sign up error:', error);
+            }
+        }
+
+        async function handleConfirm() {
+            const email = document.getElementById('confirm-email').value;
+            const code = document.getElementById('confirmation-code').value;
+
+            if (!email || !code) {
+                displayError('Email and confirmation code are required.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    displaySuccess(data.message + ' You can now log in.');
+                    showLoginForm();
+                } else {
+                    displayError(data.message);
+                }
+            } catch (error) {
+                displayError('An unexpected error occurred during confirmation.');
+                console.error('Confirm error:', error);
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                displayError('Email and password are required.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    displaySuccess(data.message);
+                    checkAuth();
+                } else if (response.status === 403 && data.code === 'NOT_CONFIRMED') {
+                    displayError(data.message);
+                    showConfirmForm(email);
+                } else {
+                    displayError(data.message);
+                }
+            } catch (error) {
+                displayError('An unexpected error occurred during login.');
+                console.error('Login error:', error);
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                const response = await fetch('/auth/logout', { method: 'POST' });
+                const data = await response.json();
+                if (response.ok) {
+                    displaySuccess(data.message);
+                    checkAuth();
+                } else {
+                    displayError(data.message);
+                }
+            } catch (error) {
+                displayError('An unexpected error occurred during logout.');
+                console.error('Logout error:', error);
+            }
+        }
+
+        async function loadEntries() {
+            try {
+                const response = await fetch('/entries');
+                if (!response.ok) {
+                    throw new Error('Failed to load entries');
+                }
+                const entries = await response.json();
+                renderEntries(entries);
+            } catch (error) {
+                displayError('Error loading entries: ' + error.message);
+                console.error('Load entries error:', error);
+            }
+        }
+
+        function renderEntries(entries) {
+            entryListDiv.innerHTML = '';
+            if (entries.length === 0) {
+                entryListDiv.innerHTML = '<p style="text-align: center; color: #888;">No entries yet. Start writing!</p>';
+                return;
+            }
+
+            // Sort entries by createdAt in descending order
+            entries.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            entries.forEach(entry => {
+                const entryCard = document.createElement('div');
+                entryCard.className = 'entry-card';
+                entryCard.setAttribute('data-id', entry.id);
+
+                const title = document.createElement('h3');
+                title.textContent = entry.title;
+
+                const meta = document.createElement('div');
+                meta.className = 'meta';
+                const createdAt = new Date(entry.createdAt).toLocaleString();
+                const updatedAt = new Date(entry.updatedAt).toLocaleString();
+                meta.textContent = 'Created: ' + createdAt + (entry.createdAt !== entry.updatedAt ? ' | Updated: ' + updatedAt : '');
+
+                const content = document.createElement('p');
+                content.textContent = entry.content;
+
+                const actions = document.createElement('div');
+                actions.className = 'entry-actions';
+
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.className = 'secondary';
+                editButton.onclick = () => editEntry(entry.id);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'danger';
+                deleteButton.onclick = () => deleteEntry(entry.id);
+
+                actions.appendChild(editButton);
+                actions.appendChild(deleteButton);
+
+                entryCard.appendChild(title);
+                entryCard.appendChild(meta);
+                entryCard.appendChild(content);
+                entryCard.appendChild(actions);
+                entryListDiv.appendChild(entryCard);
+            });
+        }
+
+        async function handleSaveEntry() {
+            const title = entryTitleInput.value.trim();
+            const content = entryContentInput.value.trim();
+
+            if (!title || !content) {
+                displayError('Title and content cannot be empty.');
+                return;
+            }
+
+            try {
+                let response;
+                let method;
+                let url;
+
+                if (currentEditingEntryId) {
+                    method = 'PUT';
+                    url = '/entries/' + currentEditingEntryId;
+                } else {
+                    method = 'POST';
+                    url = '/entries';
+                }
+
+                response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, content })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    displaySuccess(data.message);
+                    entryTitleInput.value = '';
+                    entryContentInput.value = '';
+                    currentEditingEntryId = null;
+                    saveEntryButton.textContent = 'Add Entry';
+                    cancelEditButton.classList.add('hidden');
+                    loadEntries();
+                } else {
+                    displayError(data.message);
+                }
+            } catch (error) {
+                displayError('An unexpected error occurred while saving the entry.');
+                console.error('Save entry error:', error);
+            }
+        }
+
+        async function editEntry(id) {
+            try {
+                const response = await fetch('/entries/' + id);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch entry for editing');
+                }
+                const entry = await response.json();
+                entryTitleInput.value = entry.title;
+                entryContentInput.value = entry.content;
+                currentEditingEntryId = entry.id;
+                saveEntryButton.textContent = 'Update Entry';
+                cancelEditButton.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to see the form
+            } catch (error) {
+                displayError('Error loading entry for edit: ' + error.message);
+                console.error('Edit entry error:', error);
+            }
+        }
+
+        function cancelEdit() {
+            entryTitleInput.value = '';
+            entryContentInput.value = '';
+            currentEditingEntryId = null;
+            saveEntryButton.textContent = 'Add Entry';
+            cancelEditButton.classList.add('hidden');
+        }
+
+        async function deleteEntry(id) {
+            if (!confirm('Are you sure you want to delete this entry?')) {
+                return;
+            }
+            try {
+                const response = await fetch('/entries/' + id, { method: 'DELETE' });
+                const data = await response.json();
+                if (response.ok) {
+                    displaySuccess(data.message);
+                    loadEntries();
+                } else {
+                    displayError(data.message);
+                }
+            } catch (error) {
+                displayError('An unexpected error occurred while deleting the entry.');
+                console.error('Delete entry error:', error);
+            }
+        }
+
+        // Initial check on page load
+        document.addEventListener('DOMContentLoaded', checkAuth);
+    </script>
+</body>
+</html>
